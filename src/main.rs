@@ -123,12 +123,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
-        while let Some(GilEvent {
-            id: _id,
-            event,
-            time: _time,
-        }) = gilrs.next_event()
-        {
+        while let Some(GilEvent { id, event, time }) = gilrs.next_event() {
+            let _ = id; // Suppress warnings when println below is commented out
+            let _ = time;
             // println!("{:?} New event from {}: {:?}", time, id, event);
             match event {
                 EventType::ButtonPressed(_button, _code) => {}
