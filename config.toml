@@ -1,0 +1,5 @@
+[gui]
+#scale = 3
+
+[channels]
+max = 0.7

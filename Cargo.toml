@@ -1,0 +1,17 @@
+[package]
+name = "rc-visualiser"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+cairo-rs = { version = "0.15.1", default-features = false, features = [] }
+gilrs = "0.9.0"
+serde = { version = "1", features = ["derive"] }
+toml = "0.5.8"
+
+[dependencies.sdl2]
+version = "0.35.2"
+default-features = false
+features = []
+
