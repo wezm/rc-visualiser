@@ -1,6 +1,9 @@
 [gui]
 #scale = 3
 
-[channels]
+[channels.default]
 # max = 0.7 # FS-i6X via USB
 max = 1.0 # FS-iA6B iBus via USB serial
+
+[channels.channel3]
+invert = true

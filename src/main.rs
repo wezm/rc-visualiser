@@ -11,7 +11,7 @@ use sdl2::render::{Texture, TextureAccess, TextureQuery, WindowCanvas};
 use cairo::{Format, ImageSurface};
 use gilrs::{Axis, Event as GilEvent, EventType, Gilrs};
 
-use crate::config::Config;
+use crate::config::{ChannelConfig, Config};
 
 mod config;
 
@@ -133,16 +133,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                 EventType::ButtonReleased(_button, _code) => {}
                 EventType::ButtonChanged(_button, _value, _code) => {}
                 EventType::AxisChanged(Axis::LeftStickX, value, _code) => {
-                    state.channel_1 = scale_value(value, config.channels.max)
+                    state.channel_1 = scale_value(value, config.channels.channel1())
                 }
                 EventType::AxisChanged(Axis::LeftStickY, value, _code) => {
-                    state.channel_2 = scale_value(value, config.channels.max)
+                    state.channel_2 = scale_value(value, config.channels.channel2())
                 }
                 EventType::AxisChanged(Axis::LeftZ, value, _code) => {
-                    state.channel_3 = scale_value(value, config.channels.max)
+                    state.channel_3 = scale_value(value, config.channels.channel3())
                 }
                 EventType::AxisChanged(Axis::RightStickX, value, _code) => {
-                    state.channel_4 = scale_value(value, config.channels.max)
+                    state.channel_4 = scale_value(value, config.channels.channel4())
                 }
                 EventType::AxisChanged(_axis, _value, _code) => {}
                 EventType::Connected => {}
@@ -163,8 +163,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 // Map the raw value from the receiver to -0.5..0.5
-fn scale_value(value: f32, max: f32) -> f32 {
-    value / max * 0.5
+fn scale_value(value: f32, config: ChannelConfig) -> f32 {
+    let scaled = value / config.max * 0.5;
+    if config.invert {
+        -scaled
+    } else {
+        scaled
+    }
 }
 
 fn paint(texture: &mut Texture, scale: u16, state: &State) {
