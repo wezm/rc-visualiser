@@ -5,7 +5,7 @@ Display a visual representation of the sticks of an RC transmitter on your
 screen. Intended for demonstrating things with transmitter connected via USB or
 receiver.
 
-<img src="screenshot.png" width="454" alt="Screenshot of the RC Visualiser UI">
+<img src="rc-visualiser.gif" alt="Screenshot of the RC Visualiser UI">
 
 Building
 --------
