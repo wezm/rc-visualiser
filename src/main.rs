@@ -87,7 +87,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let size = window.drawable_size();
     println!("Scale: {}", scale);
-    println!("Window: {:?}", window.size());
+    println!("Window: '{}' {:?}", window.title(), window.size());
     println!("Drawable: {:?}", size);
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
