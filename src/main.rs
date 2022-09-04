@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::f64::consts::TAU;
-use std::process::Command;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -27,40 +26,22 @@ struct State {
     channel_4: f32,
 }
 
-const WINDOW_WIDTH: u32 = 900;
-const WINDOW_HEIGHT: u32 = 500;
+const WINDOW_WIDTH: u32 = 450;
+const WINDOW_HEIGHT: u32 = 250;
+
+#[allow(unused)]
+enum UiScale {
+    Explicit(u16),
+    Inferred(u16),
+    Deferred,
+    Fallback,
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("RC Visualiser {}", env!("CARGO_PKG_VERSION"));
     let config = Config::load("config.toml")?;
     let sdl_context = sdl2::init()?;
     let video_subsys = sdl_context.video()?;
-
-    let scale: u16 = config
-        .gui
-        .scale
-        .or_else(|| {
-            std::env::var("GDK_SCALE")
-                .ok()
-                .and_then(|scale| scale.parse().ok())
-                .or_else(|| {
-                    Command::new("gsettings")
-                        .args(&["get", "org.gnome.desktop.interface", "scaling-factor"])
-                        .output()
-                        .ok()
-                        .and_then(|output| {
-                            if output.status.success() {
-                                std::str::from_utf8(&output.stdout)
-                                    .ok()
-                                    .and_then(|text| text.split_ascii_whitespace().last())
-                                    .and_then(|scale| scale.parse().ok())
-                            } else {
-                                None
-                            }
-                        })
-                })
-        })
-        .unwrap_or(1);
 
     let mut gilrs = Gilrs::new().unwrap();
     let mut gamepad_name = None;
@@ -73,19 +54,32 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    let scale = ui_scale(&config);
     let window = video_subsys
         .window(
             gamepad_name.as_deref().unwrap_or("RC Transmitter"),
-            WINDOW_WIDTH,
-            WINDOW_HEIGHT,
+            WINDOW_WIDTH * scale.as_u32(),
+            WINDOW_HEIGHT * scale.as_u32(),
         )
         // .resizable()
         .position_centered()
+        .allow_highdpi()
         .opengl()
         .build()
         .map_err(|e| e.to_string())?;
 
     let size = window.drawable_size();
+    let scale = match scale {
+        UiScale::Explicit(scale) => scale,
+        UiScale::Inferred(scale) => scale,
+        UiScale::Deferred => {
+            // Now that the window has been created see if the drawable size is different to the
+            // requested size. This is the case on at least macOS when `allow_highdpi` is set.
+            (size.0 / WINDOW_WIDTH as u32).max(1) as u16
+        }
+        UiScale::Fallback => 1,
+    };
+
     println!("Scale: {}", scale);
     println!("Window: '{}' {:?}", window.title(), window.size());
     println!("Drawable: {:?}", size);
@@ -160,6 +154,63 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+fn ui_scale(config: &Config) -> UiScale {
+    use std::process::Command;
+
+    config
+        .gui
+        .scale
+        .map(|scale| UiScale::Explicit(scale))
+        .or_else(|| {
+            std::env::var("GDK_SCALE")
+                .ok()
+                .and_then(|scale| scale.parse().ok())
+                .or_else(|| {
+                    Command::new("gsettings")
+                        .args(&["get", "org.gnome.desktop.interface", "scaling-factor"])
+                        .output()
+                        .ok()
+                        .and_then(|output| {
+                            if output.status.success() {
+                                std::str::from_utf8(&output.stdout)
+                                    .ok()
+                                    .and_then(|text| text.split_ascii_whitespace().last())
+                                    .and_then(|scale| scale.parse().ok())
+                            } else {
+                                None
+                            }
+                        })
+                })
+                .map(|scale| UiScale::Inferred(scale))
+        })
+        .unwrap_or(UiScale::Fallback)
+}
+
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+fn ui_scale(config: &Config) -> UiScale {
+    config
+        .gui
+        .scale
+        .map(|scale| UiScale::Explicit(scale))
+        .unwrap_or(UiScale::Deferred)
+}
+
+impl UiScale {
+    fn as_u16(&self) -> u16 {
+        match *self {
+            UiScale::Explicit(scale) => scale,
+            UiScale::Inferred(scale) => scale,
+            UiScale::Deferred => 1,
+            UiScale::Fallback => 1,
+        }
+    }
+
+    fn as_u32(&self) -> u32 {
+        self.as_u16().into()
+    }
 }
 
 // Map the raw value from the receiver to -0.5..0.5
