@@ -7,11 +7,21 @@ receiver.
 
 <img src="rc-visualiser.gif" alt="Screenshot of the RC Visualiser UI">
 
+Features
+--------
+
+* Display the state of two gimabls
+* Cross-platform (*nix, macOS, Windows)
+* HiDPI/Retina/Custom scaling support (*nix, macOS, see [#5](https://github.com/wezm/rc-visualiser/issues/5) for Windows)
+
 Building
 --------
 
-Ensure you have [installed the Rust compiler][install-rust] and the sdl2
-development libraries (`sdl2` package on Arch Linux), then:
+Dependencies:
+
+* [Rust compiler][install-rust]
+* [sdl2](https://libsdl.org/) development library (`sdl2` package on Arch Linux)
+* [cairo](https://www.cairographics.org/) development library (`cairo` package on Arch Linux)
 
 ```
 cargo build --release --locked
