@@ -225,7 +225,7 @@ fn scale_value(value: f32, config: ChannelConfig) -> f32 {
 
 fn paint(texture: &mut Texture, scale: u16, state: &State) {
     let scale = scale as f64;
-    let margin = scale * 10.;
+    let margin = 10.;
     let TextureQuery { width, height, .. } = texture.query();
     texture
         .with_lock(None, |data, pitch| {
@@ -248,7 +248,8 @@ fn paint(texture: &mut Texture, scale: u16, state: &State) {
 
             cr.scale(scale as f64, scale as f64); // dpi scale
 
-            let gimbals_width = 2. * 100. + 5. * margin;
+            let gap = 10. * margin;
+            let gimbals_width = 2. * 100. + gap;
             let gimbals_height = 100.;
             cr.translate(
                 (width as f64 / scale / 2.) - (gimbals_width / 2.),
@@ -262,7 +263,7 @@ fn paint(texture: &mut Texture, scale: u16, state: &State) {
             cr.restore().unwrap();
 
             cr.save().unwrap();
-            cr.translate(150. + (5. * margin), 50.);
+            cr.translate(150. + gap, 50.);
             cr.scale(100., 100.);
             draw_gimbal(&cr, scale, state.channel_1, state.channel_2);
             cr.restore().unwrap();
