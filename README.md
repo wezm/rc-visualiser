@@ -12,7 +12,6 @@ Features
 
 * Display the state of two gimabls
 * Cross-platform (*nix, macOS, Windows)
-* HiDPI/Retina/Custom scaling support (*nix, macOS, see [#5](https://github.com/wezm/rc-visualiser/issues/5) for Windows)
 
 Building
 --------
